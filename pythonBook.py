@@ -1,60 +1,60 @@
 import os
 import requests
 
-# مسیر فایل raw
+# Path to the raw file
 raw_file_path = 'free-programming-books.txt'
 
-# پوشه‌ای که فایل‌های دانلودشده ذخیره می‌شوند
+# Folder where downloaded files will be stored
 download_folder = 'downloaded_books'
 
-# بررسی و ایجاد پوشه دانلود
+# Check and create the download folder
 if not os.path.exists(download_folder):
     os.makedirs(download_folder)
 
-# خواندن فایل raw
+# Read the raw file
 if not os.path.exists(raw_file_path):
-    print(f"فایل {raw_file_path} پیدا نشد. لطفاً فایل را در پوشه اسکریپت قرار دهید.")
+    print(f"File {raw_file_path} not found. Please place the file in the script folder.")
     exit(1)
 
 with open(raw_file_path, 'r', encoding='utf-8') as file:
     lines = file.readlines()
 
-# استخراج لینک‌ها و عناوین آن‌ها
+# Extract links and their titles
 pdf_links = []
 for line in lines:
     if '.pdf' in line:
-        # استخراج نام عنوان (متن بین [])
+        # Extract title (text inside [])
         title = line.split('[')[1].split(']')[0].strip()
-        # استخراج لینک (متن بین پرانتزها)
+        # Extract link (text inside ())
         url = line.split('](')[1].split(')')[0].strip()
         pdf_links.append((title, url))
 
-# بررسی تعداد لینک‌های پیدا شده
+# Check the number of found links
 if not pdf_links:
-    print("هیچ لینکی با فرمت .pdf پیدا نشد.")
+    print("No .pdf links found.")
     exit(0)
 
-# دانلود فایل‌ها
+# Download files
 for title, pdf_url in pdf_links:
     try:
-        print(f"در حال دانلود: {title} از {pdf_url}")
+        print(f"Downloading: {title} from {pdf_url}")
         pdf_response = requests.get(pdf_url)
 
-        # بررسی وضعیت دانلود
+        # Check download status
         if pdf_response.status_code == 200:
-            # حذف کاراکترهای نامعتبر از نام فایل
+            # Remove invalid characters from file name
             safe_title = ''.join(c for c in title if c.isalnum() or c in ' _-').strip()
             file_name = f"{safe_title}.pdf"
             file_path = os.path.join(download_folder, file_name)
 
-            # ذخیره فایل PDF
+            # Save the PDF file
             with open(file_path, 'wb') as f:
                 f.write(pdf_response.content)
-            print(f"دانلود شد: {file_name}")
+            print(f"Downloaded: {file_name}")
         else:
-            print(f"خطا در دانلود {pdf_url}: {pdf_response.status_code}")
+            print(f"Error downloading {pdf_url}: {pdf_response.status_code}")
 
     except Exception as e:
-        print(f"خطا در دانلود {pdf_url}: {e}")
+        print(f"Error downloading {pdf_url}: {e}")
 
-print("پایان دانلود.")
+print("Download completed.")
